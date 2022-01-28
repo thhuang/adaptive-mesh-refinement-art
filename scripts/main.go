@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-    "adaptive-mesh-refinement-art/image"
+	"adaptive-mesh-refinement-art/src/image"
 )
 
 func main() {
