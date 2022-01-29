@@ -3,41 +3,44 @@ package image
 import (
 	"image"
 	"log"
+	"math"
 
 	"gocv.io/x/gocv" // Install OpenCV first: https://gocv.io/getting-started/macos/
 
 	"adaptive-mesh-refinement-art/modules/image/entity"
 )
 
-func NewImageFromFile(path string, size int) *entity.Image {
+func NewFromBoolMat(mat [][]bool) *entity.Image {
+	size := len(mat)
+	m := gocv.NewMatWithSize(size, size, gocv.MatTypeCV8U)
+	for i, r := range mat {
+		for j, v := range r {
+			if v {
+				m.SetUCharAt(i, j, 255)
+			}
+		}
+	}
+	return new(entity.Image).Init(&m)
+}
+
+func NewImageFromFile(path string, level int) *entity.Image {
+	if level > 13 {
+		log.Panicf("level cannot be greater than 13: %d > 13", level)
+	}
+	size := int(math.Pow(2, float64(level))) + 1
+
 	originalMat := gocv.IMRead(path, gocv.IMReadAnyColor)
 	if originalMat.Empty() {
 		log.Panic("cannot read image: " + path)
 	}
 
 	gaussianBlurMat := gaussianBlur(&originalMat)
-
 	grayMat := gray(gaussianBlurMat)
-	// windowForGray := gocv.NewWindow("gray image")
-	// defer windowForGray.Close()
-	// windowForGray.IMShow(*grayMat)
-
 	cropMat := crop(grayMat)
-	// windowForCrop := gocv.NewWindow("cropped image")
-	// defer windowForCrop.Close()
-	// windowForCrop.IMShow(*cropMat)
-
 	resizedMat := resize(cropMat, size)
-	// windowForResized := gocv.NewWindow("resized image")
-	// defer windowForResized.Close()
-	// windowForResized.IMShow(*resizedMat)
-
 	cannyMat := canny(resizedMat)
-	// windowForCanny := gocv.NewWindow("canny image")
-	// defer windowForCanny.Close()
-	// windowForCanny.IMShow(*cannyMat)
 
-	return entity.New(cannyMat)
+	return new(entity.Image).Init(cannyMat)
 }
 
 func gaussianBlur(mat *gocv.Mat) *gocv.Mat {
@@ -54,7 +57,7 @@ func gray(mat *gocv.Mat) *gocv.Mat {
 
 func crop(mat *gocv.Mat) *gocv.Mat {
 	size := mat.Size()
-	length := min(size)
+	length := int(math.Min(float64(size[0]), float64(size[1])))
 
 	x0 := (size[1] - length) / 2
 	y0 := (size[0] - length) / 2
@@ -76,18 +79,4 @@ func canny(mat *gocv.Mat) *gocv.Mat {
 	gocv.Canny(*mat, &res, 150, 200)
 	gocv.ConvertScaleAbs(res, &res, 1, 0)
 	return &res
-}
-
-func min(nums []int) int {
-	if len(nums) == 0 {
-		return 0
-	}
-
-	res := nums[0]
-	for _, num := range nums {
-		if num < res {
-			res = num
-		}
-	}
-	return res
 }
