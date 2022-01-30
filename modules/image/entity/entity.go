@@ -45,11 +45,18 @@ func (img *Image) Save(path string) {
 }
 
 func (img *Image) GetMat() [][]bool {
+	data, err := img.mat.DataPtrUint8()
+	if err != nil {
+		log.Panicf("img.mat.DataPrtUint8 failed: %v", err)
+	}
+
 	res := make([][]bool, img.size)
+	idx := 0
 	for i := 0; i < img.size; i++ {
 		r := make([]bool, img.size)
 		for j := 0; j < img.size; j++ {
-			r[j] = img.mat.GetUCharAt(i, j) > 0
+			r[j] = data[idx] > 0
+			idx++
 		}
 		res[i] = r
 	}

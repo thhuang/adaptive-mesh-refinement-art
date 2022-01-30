@@ -8,11 +8,9 @@ import (
 )
 
 func NewQuadtreeFromImage(image *imageEntity.Image) *entity.Quadtree {
-	log.Println("generating the quadtree from the image")
-
+	log.Println("generate boolean matrix")
 	mat := image.GetMat()
 	maxLv := image.GetMaxLv()
-
 	size := len(mat) - 1
 	root := entity.NewNode(
 		0, size,
@@ -25,7 +23,7 @@ func NewQuadtreeFromImage(image *imageEntity.Image) *entity.Quadtree {
 
 	log.Println("generating layer maps")
 	lvSize := make([]int, maxLv)
-	layers := make([][][]bool, maxLv)
+	layers := make(entity.Layers, maxLv)
 	for lv := 0; lv < maxLv; lv++ {
 		count := int(math.Pow(2, float64(lv)))
 		lvSize[lv] = (size) / count
@@ -53,7 +51,7 @@ func NewQuadtreeFromImage(image *imageEntity.Image) *entity.Quadtree {
 				}
 
 				qi, qj := i/lvSize[lv], j/lvSize[lv]
-				layers[lv][qi][qj] = true
+				layers.SetSubdivideFlag(lv, qi, qj)
 			}
 		}
 	}

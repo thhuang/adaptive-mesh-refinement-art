@@ -8,7 +8,7 @@ import (
 type Quadtree struct {
 	maxLv  int
 	mat    [][]bool
-	layers [][][]bool
+	layers Layers
 	root   *node
 }
 
@@ -80,6 +80,75 @@ func (t *Quadtree) shouldSubdivide(node *node) bool {
 
 	i, j := node.nw.x/node.size, node.nw.y/node.size
 	return t.layers[node.lv][i][j]
+}
+
+type Layers [][][]bool
+
+func (l Layers) SetSubdivideFlag(lv, i, j int) {
+	if lv < 0 {
+		return
+	}
+
+	size := len(l[lv])
+	if i < 0 || j < 0 || i >= size || j >= size {
+		return
+	}
+
+	if l[lv][i][j] {
+		return
+	}
+
+	l[lv][i][j] = true
+
+	///////////////////
+	//  o -- o -- o  //
+	//  | nw | ne |  //
+	//  o -- o -- o  //
+	//  | sw | se |  //
+	//  o -- o -- o  //
+	///////////////////
+
+	plv, pi, pj := lv-1, i/2, j/2
+	switch getDirection(i, j) {
+	case nw:
+		l.SetSubdivideFlag(plv, pi-1, pj)
+		l.SetSubdivideFlag(plv, pi, pj-1)
+	case sw:
+		l.SetSubdivideFlag(plv, pi+1, pj)
+		l.SetSubdivideFlag(plv, pi, pj-1)
+	case se:
+		l.SetSubdivideFlag(plv, pi+1, pj)
+		l.SetSubdivideFlag(plv, pi, pj+1)
+	case ne:
+		l.SetSubdivideFlag(plv, pi-1, pj)
+		l.SetSubdivideFlag(plv, pi, pj+1)
+	}
+
+}
+
+type direction int
+
+const (
+	nw direction = iota
+	sw
+	se
+	ne
+)
+
+func getDirection(i, j int) direction {
+	isNorth := i%2 == 0
+	isWest := j%2 == 0
+
+	if isNorth {
+		if isWest {
+			return nw
+		}
+		return ne
+	}
+	if isWest {
+		return sw
+	}
+	return se
 }
 
 type coord struct {
