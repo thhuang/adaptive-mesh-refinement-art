@@ -24,8 +24,8 @@ func NewFromBoolMat(mat [][]bool) *entity.Image {
 }
 
 func NewImageFromFile(path string, level int) *entity.Image {
-	if level > 13 {
-		log.Panicf("level cannot be greater than 13: %d > 13", level)
+	if level > 12 {
+		log.Panicf("level cannot be greater than 12: %d > 12", level)
 	}
 	size := int(math.Pow(2, float64(level))) + 1
 
@@ -34,11 +34,11 @@ func NewImageFromFile(path string, level int) *entity.Image {
 		log.Panic("cannot read image: " + path)
 	}
 
-	gaussianBlurMat := gaussianBlur(&originalMat)
-	grayMat := gray(gaussianBlurMat)
-	cropMat := crop(grayMat)
+	cropMat := crop(&originalMat)
 	resizedMat := resize(cropMat, size)
-	cannyMat := canny(resizedMat)
+	gaussianBlurMat := gaussianBlur(resizedMat)
+	grayMat := gray(gaussianBlurMat)
+	cannyMat := canny(grayMat)
 
 	return new(entity.Image).Init(cannyMat)
 }
@@ -76,7 +76,7 @@ func resize(mat *gocv.Mat, size int) *gocv.Mat {
 
 func canny(mat *gocv.Mat) *gocv.Mat {
 	res := gocv.NewMat()
-	gocv.Canny(*mat, &res, 150, 200)
+	gocv.Canny(*mat, &res, 20, 70)
 	gocv.ConvertScaleAbs(res, &res, 1, 0)
 	return &res
 }

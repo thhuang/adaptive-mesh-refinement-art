@@ -112,9 +112,9 @@ func (t *Quadtree) shouldSubdivide(node *node) bool {
 	if node.children != nil {
 		return false
 	}
+
 	i, j := node.nw.x/node.size, node.nw.y/node.size
 	return t.layers[node.lv][i][j]
-
 }
 
 type coord struct {
@@ -160,7 +160,7 @@ func (n *node) subdivide() *children {
 	n.children = &children{
 		nw: &node{nw: coords[0], sw: coords[4], se: coords[8], ne: coords[7], lv: n.lv + 1, parent: n, size: n.size / 2},
 		sw: &node{nw: coords[4], sw: coords[1], se: coords[5], ne: coords[8], lv: n.lv + 1, parent: n, size: n.size / 2},
-		se: &node{nw: coords[8], sw: coords[5], se: coords[2], ne: coords[1], lv: n.lv + 1, parent: n, size: n.size / 2},
+		se: &node{nw: coords[8], sw: coords[5], se: coords[2], ne: coords[6], lv: n.lv + 1, parent: n, size: n.size / 2},
 		ne: &node{nw: coords[7], sw: coords[8], se: coords[6], ne: coords[3], lv: n.lv + 1, parent: n, size: n.size / 2},
 	}
 

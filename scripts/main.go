@@ -9,12 +9,12 @@ import (
 
 func main() {
 	path := "th.jpg"
-	img := image.NewImageFromFile(path, 10)
+	img := image.NewImageFromFile(path, 12)
 	img.Save("preprocessed.png")
 
 	tree := amr.NewQuadtreeFromImage(img)
 	tree.Refine()
-	image.NewFromBoolMat(tree.GetLayerMat(9)).Save("layer.png")
+	image.NewFromBoolMat(tree.GetLayerMat(3)).Save("layer.png")
 
 	mat := tree.GetAMRMat()
 	image.NewFromBoolMat(mat).Save("amr.png")
