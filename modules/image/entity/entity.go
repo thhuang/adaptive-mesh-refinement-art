@@ -41,7 +41,13 @@ func (img *Image) Plot() {
 
 func (img *Image) Save(path string) {
 	log.Printf("saving %s\n", path)
-	gocv.IMWrite(path, *img.mat)
+
+	if path[len(path)-4:] != ".png" {
+		gocv.IMWrite(path, *img.mat)
+	}
+
+	params := []int{gocv.IMWritePngCompression, 8}
+	gocv.IMWriteWithParams(path, *img.mat, params)
 }
 
 func (img *Image) GetMat() [][]bool {
