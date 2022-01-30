@@ -2,7 +2,7 @@ package entity
 
 import (
 	"container/list"
-	"math"
+	"log"
 )
 
 type Quadtree struct {
@@ -12,55 +12,18 @@ type Quadtree struct {
 	root   *node
 }
 
-func (t *Quadtree) Init(mat [][]bool, maxLv int) *Quadtree {
-	size := len(mat) - 1
-	root := &node{
-		lv:   0,
-		size: size,
-		nw:   coord{0, 0},
-		sw:   coord{size, 0},
-		se:   coord{size, size},
-		ne:   coord{0, size},
+func NewQuadtree(maxLv int, mat [][]bool, layers [][][]bool, root *node) *Quadtree {
+	return &Quadtree{
+		maxLv:  maxLv,
+		mat:    mat,
+		layers: layers,
+		root:   root,
 	}
-
-	lvSize := make([]int, maxLv)
-	layers := make([][][]bool, maxLv)
-	for lv := 0; lv < maxLv; lv++ {
-		count := int(math.Pow(2, float64(lv)))
-		lvSize[lv] = (size) / count
-		layers[lv] = make([][]bool, count)
-		for c := 0; c < count; c++ {
-			layers[lv][c] = make([]bool, count)
-		}
-
-		for i := 0; i < len(mat); i++ {
-			for j := 0; j < len(mat); j++ {
-				if !mat[i][j] {
-					continue
-				}
-
-				// (2, 5)
-				// 0 -> 1 -> 8: (0-2, 0-5)
-				// 1 -> 2 -> 4: (0-2, 1-1)
-				// 2 -> 4 -> 2: (1-0, 2-1)
-				// 3 -> 8 -> 1: (2-0, 5-0)
-
-				ri, rj := i%lvSize[lv], j%lvSize[lv]
-				if ri*rj == 0 {
-					continue
-				}
-
-				qi, qj := i/lvSize[lv], j/lvSize[lv]
-				layers[lv][qi][qj] = true
-			}
-		}
-	}
-
-	t = &Quadtree{maxLv, mat, layers, root}
-	return t
 }
 
 func (t *Quadtree) Refine() {
+	log.Println("refining")
+
 	q := list.New()
 	q.PushBack(t.root)
 	var next *list.Element
@@ -80,6 +43,8 @@ func (t *Quadtree) Refine() {
 }
 
 func (t *Quadtree) GetAMRMat() [][]bool {
+	log.Println("generating the quadtree matrix")
+
 	mat := make([][]bool, len(t.mat))
 	for i := range mat {
 		mat[i] = make([]bool, len(t.mat))
@@ -122,6 +87,10 @@ type coord struct {
 	y int
 }
 
+func NewCoord(x, y int) coord {
+	return coord{x, y}
+}
+
 type node struct {
 	lv   int
 	size int
@@ -134,6 +103,14 @@ type node struct {
 	parent    *node
 	children  *children
 	neighbors *neighbors
+}
+
+func NewNode(lv, size int, nw, sw, se, ne coord, parent *node) *node {
+	return &node{
+		lv: lv, size: size,
+		nw: nw, sw: sw, se: se, ne: ne,
+		parent: parent,
+	}
 }
 
 func (n *node) subdivide() *children {

@@ -12,17 +12,16 @@ type Image struct {
 	size int
 }
 
-func (img *Image) Init(mat *gocv.Mat) *Image {
+func NewImage(mat *gocv.Mat) *Image {
 	size := mat.Size()
 	if size[0] != size[1] {
 		log.Panicf("the image should be a square: %d != %d", size[0], size[1])
 	}
 
-	img = &Image{
+	return &Image{
 		mat:  mat,
 		size: size[0],
 	}
-	return img
 }
 
 func (img *Image) Plot() {
@@ -41,6 +40,7 @@ func (img *Image) Plot() {
 }
 
 func (img *Image) Save(path string) {
+	log.Printf("saving %s\n", path)
 	gocv.IMWrite(path, *img.mat)
 }
 
